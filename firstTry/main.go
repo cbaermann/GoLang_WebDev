@@ -3,7 +3,7 @@ package main
 import "fmt"
 
 func main() {
-	name := "Cody"
+	name := "Todd McLeod"
 
 	tpl := `
 	<!DOCTYPE html>
@@ -19,3 +19,5 @@ func main() {
 	`
 	fmt.Println(tpl)
 }
+
+//used go run main.go > index.html to transform html in main.go to it's own html file
