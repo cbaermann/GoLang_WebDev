@@ -1,23 +1,28 @@
 package main
 
-import "fmt"
+import (
+	"log"
+	"os"
+	"text/template"
+)
 
 func main() {
-	name := "Todd McLeod"
+	tpl, err := template.ParseFiles("tpl.gohtml")
+	if err != nil {
+		log.Fatalln(err)
+	}
+	//creates index.html file
+	nf, err := os.Create("index.html")
+	if err != nil {
+		log.Panicln("error creating file")
+	}
+	defer nf.Close()
 
-	tpl := `
-	<!DOCTYPE html>
-	<html lang="en">
-	<head>
-	<meta charset="UTF-8">
-	<title>Hello World!</title>
-	</head>
-	<body>
-	<h1>` + name + `</h1>
-	</body>
-	</html>
-	`
-	fmt.Println(tpl)
+	err = tpl.Execute(nf, nil)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
 }
 
 //used go run main.go > index.html to transform html in main.go to it's own html file
