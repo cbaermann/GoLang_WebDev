@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>functions</title>
+</head>
+<body>
+<!--passes first input -->
+{{.}}
+<!--passes first input then gives input to double func -->
+{{. | fdbl}}
+<!--passes first input->double func-> square func -->
+{{. | fdbl | fsq}}
+<!--passes first input->double->square func->square root func -->
+{{. | fdbl | fsq | fsqrt}}
+
+</body>
+</html>
