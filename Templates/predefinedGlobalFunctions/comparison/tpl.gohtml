@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>predefined global functions</title>
+</head>
+<body>
+{{/*if greater than*/}}
+{{if gt .Score1 .Score2}}
+SCORE 1 > SCORE 2
+{{end}}
+{{/*if less than*/}}
+{{if lt .Score1 .Score2}}
+SCORE 1 < SCORE 2
+{{end}}
+{{/*if equal to*/}}
+{{if eq .Score1 .Score2}}
+SCORE 1 = SCORE 2
+{{end}}
+{{/*if score1 is less than 10*/}}
+{{if lt .Score1 10}}
+LAST ONE: SCORE 1 < 10
+{{end}}
+</body>
+</html>
