@@ -22,6 +22,7 @@ func (m hotdog) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 		req.Method,
 		req.Form,
 	}
+	//can interchange html and gohtml pages with ExecuteTemplate
 	tpl.ExecuteTemplate(w, "index.html", data)
 }
 
