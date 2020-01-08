@@ -26,4 +26,13 @@ func main() {
 	mux.Handle("/cat", c)
 	//listening on localhost 8080
 	http.ListenAndServe(":8080", mux)
+
+	//cleaner solution
+	//var d dog
+	//var c cat
+	//http.Handle("/dog",d)
+	//http.Handle("/cat",c)
+	//http.ListenAndServe(":8080", nil)
+
+	//passing nil gives default serveMux per net/http package in go
 }
