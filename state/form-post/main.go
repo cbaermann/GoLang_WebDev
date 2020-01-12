@@ -19,4 +19,7 @@ func foo(w http.ResponseWriter, req *http.Request) {
 		<input type="submit">
 	</form>
 	<br>`+v)
+	//v is set to form data passed through variable of q
+	//q is set to the name of input type text
+	//value passed through q is printed to screen via v
 }
