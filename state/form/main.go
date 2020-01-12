@@ -30,7 +30,7 @@ func foo(w http.ResponseWriter, req *http.Request) {
 	l := req.FormValue("last")
 	s := req.FormValue("subscribe") == "on"
 
-	err := tpl.ExecuteTemplate(w, "index.gohtml", person{f, l, s})
+	err := tpl.ExecuteTemplate(w, "index.html", person{f, l, s})
 	if err != nil {
 		http.Error(w, err.Error(), 500)
 		log.Fatalln(err)
