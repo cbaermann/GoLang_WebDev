@@ -28,6 +28,8 @@ func foo(w http.ResponseWriter, req *http.Request) {
 
 	f := req.FormValue("first")
 	l := req.FormValue("last")
+	//returns true or false. If checked it gives bool of true
+	//if left unchecked, returns bool of false
 	s := req.FormValue("subscribe") == "on"
 
 	err := tpl.ExecuteTemplate(w, "index.html", person{f, l, s})
