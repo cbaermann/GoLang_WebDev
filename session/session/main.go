@@ -8,7 +8,7 @@ import (
 )
 
 type user struct {
-	userName string
+	UserName string
 	First    string
 	Last     string
 }
