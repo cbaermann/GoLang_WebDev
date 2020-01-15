@@ -1,5 +1,7 @@
 package main
 
+//go run *.go
+
 import (
 	"html/template"
 	"net/http"
