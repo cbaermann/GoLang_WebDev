@@ -1,7 +1,9 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
+	"time"
 
 	uuid "github.com/satori/go.uuid"
 )
@@ -16,21 +18,52 @@ func getUser(w http.ResponseWriter, r *http.Request) user {
 			Value: sID.String(),
 		}
 	}
+	c.MaxAge = sessionLength
 	http.SetCookie(w, c)
 	//if user exists, get user
 	var u user
-	if un, ok := dbSessions[c.Value]; ok {
-		u = dbUsers[un]
+	if s, ok := dbSessions[c.Value]; ok {
+		s.lastActivity = time.Now()
+		dbSessions[c.Value] = s
+		u = dbUsers[s.un]
 	}
 	return u
 }
 
-func loggedIn(r *http.Request) bool {
+func loggedIn(w http.ResponseWriter, r *http.Request) bool {
 	c, err := r.Cookie("session")
 	if err != nil {
 		return false
 	}
-	un := dbSessions[c.Value]
-	_, ok := dbUsers[un]
+	s, ok := dbSessions[c.Value]
+	if ok {
+		s.lastActivity = time.Now()
+		dbSessions[c.Value] = s
+	}
+	_, ok = dbUsers[s.un]
+	//refresh session
+	c.MaxAge = sessionLength
+	http.SetCookie(w, c)
 	return ok
+}
+
+func cleanSessions() {
+	fmt.Println("Before Clean")
+	showSessions()
+	for k, v := range dbSessions {
+		if time.Now().Sub(v.lastActivity) > (time.Second * 30) {
+			delete(dbSessions, k)
+		}
+	}
+	dbSessionsCleaned = time.Now()
+	fmt.Println("After Clean")
+	showSessions()
+}
+
+func showSessions() {
+	fmt.Println("*********")
+	for k, v := range dbSessions {
+		fmt.Println(k, v.un)
+	}
+	fmt.Println("")
 }

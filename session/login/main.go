@@ -3,6 +3,7 @@ package main
 import (
 	"net/http"
 	"text/template"
+	"time"
 
 	uuid "github.com/satori/go.uuid"
 
@@ -17,9 +18,17 @@ type user struct {
 	Role     string
 }
 
+type session struct {
+	un           string
+	lastActivity time.Time
+}
+
 var tpl *template.Template
 var dbUsers = map[string]user{}
-var dbSessions = map[string]string{}
+var dbSessions = map[string]session{}
+var dbSessionsCleaned time.Time
+
+const sessionLength int = 30
 
 func init() {
 	tpl = template.Must(template.ParseGlob("templates/*"))
@@ -37,23 +46,25 @@ func main() {
 
 func index(w http.ResponseWriter, r *http.Request) {
 	u := getUser(w, r)
+	showSessions()
 	tpl.ExecuteTemplate(w, "index.html", u)
 }
 
 func bar(w http.ResponseWriter, r *http.Request) {
 	u := getUser(w, r)
-	if !loggedIn(r) {
+	if !loggedIn(w, r) {
 		http.Redirect(w, r, "/", http.StatusSeeOther)
 		return
 	}
 	if u.Role != "007" {
 		http.Error(w, "You must be 007 to enter the bar", http.StatusForbidden)
 	}
+	showSessions()
 	tpl.ExecuteTemplate(w, "bar.html", u)
 }
 
 func signup(w http.ResponseWriter, r *http.Request) {
-	if loggedIn(r) {
+	if loggedIn(w, r) {
 		http.Redirect(w, r, "/", http.StatusSeeOther)
 		return
 	}
@@ -77,8 +88,9 @@ func signup(w http.ResponseWriter, r *http.Request) {
 			Name:  "session",
 			Value: sID.String(),
 		}
+		c.MaxAge = sessionLength
 		http.SetCookie(w, c)
-		dbSessions[c.Value] = un
+		dbSessions[c.Value] = session{un, time.Now()}
 		// store user in dbUsers
 		bs, err := bcrypt.GenerateFromPassword([]byte(p), bcrypt.MinCost)
 		if err != nil {
@@ -91,15 +103,16 @@ func signup(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/", http.StatusSeeOther)
 		return
 	}
+	showSessions()
 	tpl.ExecuteTemplate(w, "signup.html", u)
 }
 
 func login(w http.ResponseWriter, r *http.Request) {
-	if loggedIn(r) {
+	if loggedIn(w, r) {
 		http.Redirect(w, r, "/", http.StatusSeeOther)
 		return
 	}
-
+	var u user
 	// process form submission
 	if r.Method == http.MethodPost {
 		un := r.FormValue("username")
@@ -122,17 +135,18 @@ func login(w http.ResponseWriter, r *http.Request) {
 			Name:  "session",
 			Value: sID.String(),
 		}
+		c.MaxAge = sessionLength
 		http.SetCookie(w, c)
-		dbSessions[c.Value] = un
+		dbSessions[c.Value] = session{un, time.Now()}
 		http.Redirect(w, r, "/", http.StatusSeeOther)
 		return
 	}
-
-	tpl.ExecuteTemplate(w, "login.html", nil)
+	showSessions()
+	tpl.ExecuteTemplate(w, "login.html", u)
 }
 
 func logout(w http.ResponseWriter, r *http.Request) {
-	if !loggedIn(r) {
+	if !loggedIn(w, r) {
 		http.Redirect(w, r, "/", http.StatusSeeOther)
 		return
 	}
@@ -146,6 +160,10 @@ func logout(w http.ResponseWriter, r *http.Request) {
 		MaxAge: -1,
 	}
 	http.SetCookie(w, c)
+
+	if time.Now().Sub(dbSessionsCleaned) > (time.Second * 30) {
+		go cleanSessions()
+	}
 
 	http.Redirect(w, r, "/login", http.StatusSeeOther)
 }
