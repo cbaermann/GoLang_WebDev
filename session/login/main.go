@@ -14,6 +14,7 @@ type user struct {
 	Password []byte
 	First    string
 	Last     string
+	Role     string
 }
 
 var tpl *template.Template
@@ -22,8 +23,7 @@ var dbSessions = map[string]string{}
 
 func init() {
 	tpl = template.Must(template.ParseGlob("templates/*"))
-	bs, _ := bcrypt.GenerateFromPassword([]byte("password"), bcrypt.MinCost)
-	dbUsers["test@test.com"] = user{"test@test.com", bs, "James", "Bond"}
+
 }
 func main() {
 	http.HandleFunc("/", index)
@@ -46,6 +46,9 @@ func bar(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/", http.StatusSeeOther)
 		return
 	}
+	if u.Role != "007" {
+		http.Error(w, "You must be 007 to enter the bar", http.StatusForbidden)
+	}
 	tpl.ExecuteTemplate(w, "bar.html", u)
 }
 
@@ -62,6 +65,7 @@ func signup(w http.ResponseWriter, r *http.Request) {
 		p := r.FormValue("password")
 		f := r.FormValue("firstname")
 		l := r.FormValue("lastname")
+		rl := r.FormValue("role")
 		//?username taken
 		if _, ok := dbUsers[un]; ok {
 			http.Error(w, "Username is already taken", http.StatusForbidden)
@@ -81,7 +85,7 @@ func signup(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Internal server error", http.StatusInternalServerError)
 			return
 		}
-		u = user{un, bs, f, l}
+		u = user{un, bs, f, l, rl}
 		dbUsers[un] = u
 		// redirect
 		http.Redirect(w, r, "/", http.StatusSeeOther)
