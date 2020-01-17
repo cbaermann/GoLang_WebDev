@@ -21,6 +21,8 @@ func init() {
 
 func main() {
 	http.HandleFunc("/", index)
+	//adds route to serve pictures
+	http.Handle("/public/", http.StripPrefix("/public", http.FileServer(http.Dir("./public"))))
 	http.Handle("/favicon.ico", http.NotFoundHandler())
 	http.ListenAndServe(":8080", nil)
 }
@@ -53,7 +55,7 @@ func index(w http.ResponseWriter, r *http.Request) {
 		c = appendValue(w, c, fname)
 	}
 	xs := strings.Split(c.Value, "|")
-	tpl.ExecuteTemplate(w, "index.html", xs)
+	tpl.ExecuteTemplate(w, "index.html", xs[1:])
 }
 
 func getCookie(w http.ResponseWriter, r *http.Request) *http.Cookie {
