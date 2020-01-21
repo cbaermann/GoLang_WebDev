@@ -9,6 +9,7 @@ import (
 	uuid "github.com/satori/go.uuid"
 )
 
+// user data localy stored
 type user struct {
 	UserName string
 	Password string
@@ -16,6 +17,7 @@ type user struct {
 	Last     string
 }
 
+// pointer to template.Template
 var tpl *template.Template
 var dbUsers = map[string]user{}      // user ID, user
 var dbSessions = map[string]string{} // session ID, user ID
@@ -32,6 +34,7 @@ func main() {
 	http.ListenAndServe(":8080", nil)
 }
 
+//calls getUser func passing in req
 func index(w http.ResponseWriter, req *http.Request) {
 	u := getUser(req)
 	tpl.ExecuteTemplate(w, "index.html", u)
