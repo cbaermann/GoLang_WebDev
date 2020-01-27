@@ -37,7 +37,12 @@ type Book struct {
 }
 
 func main() {
-
+	http.HandleFunc("/", index)
+	http.HandleFunc("/books", booksIndex)
+	http.HandleFunc("/books/show", booksShow)
+	http.HandleFunc("/books/create", booksCreateForm)
+	http.HandleFunc("/books/create/process", booksCreateProcess)
+	http.ListenAndServe(":8080", nil)
 }
 
 func index(w http.ResponseWriter, r *http.Request) {
@@ -139,6 +144,6 @@ func booksCreateProcess(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// confirm insertion
-	tpl.ExecuteTemplate(w, "created.gohtml", bk)
+	tpl.ExecuteTemplate(w, "created.html", bk)
 
 }
