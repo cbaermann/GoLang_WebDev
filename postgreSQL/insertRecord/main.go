@@ -147,3 +147,70 @@ func booksCreateProcess(w http.ResponseWriter, r *http.Request) {
 	tpl.ExecuteTemplate(w, "created.html", bk)
 
 }
+
+func booksUpdateForm(w http.ResponseWriter, r *http.Request) {
+	if r.Method != "GET" {
+		http.Error(w, http.StatusText(405), http.StatusMethodNotAllowed)
+		return
+	}
+
+	isbn := r.FormValue("isbn")
+	if isbn == "" {
+		http.Error(w, http.StatusText(400), http.StatusBadRequest)
+		return
+	}
+
+	row := db.QueryRow("SELECT * FROM books WHERE isbn = $1", isbn)
+
+	bk := Book{}
+	err := row.Scan(&bk.Isbn, &bk.Title, &bk.Author, &bk.Price)
+	switch {
+	case err == sql.ErrNoRows:
+		http.NotFound(w, r)
+		return
+	case err != nil:
+		http.Error(w, http.StatusText(500), http.StatusInternalServerError)
+		return
+	}
+	tpl.ExecuteTemplate(w, "update.html", bk)
+}
+
+func booksUpdateProcess(w http.ResponseWriter, r *http.Request) {
+	if r.Method != "POST" {
+		http.Error(w, http.StatusText(405), http.StatusMethodNotAllowed)
+		return
+	}
+
+	//get form values
+	bk := Book{}
+	bk.Isbn = r.FormValue("isbn")
+	bk.Title = r.FormValue("title")
+	bk.Author = r.FormValue("author")
+	p := r.FormValue("price")
+
+	//validate form values
+	if bk.Isbn == "" || bk.Title == "" || bk.Author == "" || p == "" {
+		http.Error(w, http.StatusText(400), http.StatusBadRequest)
+		return
+	}
+
+	// convert form values
+	f64, err := strconv.ParseFloat(p, 32)
+	if err != nil {
+		http.Error(w, http.StatusText(406)+"Please hit back and enter a number for the price", http.StatusNotAcceptable)
+		return
+	}
+
+	bk.Price = float32(f64)
+
+	// insert values
+	_, err = db.Exec("UPDATE books SET isbn = $1, title=$2, author=$3, price=$4 WHERE isbn=$1;", bk.Isbn, bk.Title, bk.Author, bk.Price)
+	if err != nil {
+		http.Error(w, http.StatusText(500), http.StatusInternalServerError)
+		return
+	}
+
+	// confirm insertion
+	tpl.ExecuteTemplate(w, "updated.html", bk)
+
+}
