@@ -1,5 +1,6 @@
 package config
 
+//reads html from templates folder
 import "html/template"
 
 var TPL *template.Template

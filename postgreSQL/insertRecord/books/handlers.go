@@ -1,5 +1,6 @@
 package books
 
+//CRUD functions bellow
 import (
 	"database/sql"
 	"net/http"

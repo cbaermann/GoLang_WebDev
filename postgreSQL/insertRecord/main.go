@@ -1,5 +1,6 @@
 package main
 
+//holds routes and index. Rest refactored to other folders
 import (
 	"net/http"
 

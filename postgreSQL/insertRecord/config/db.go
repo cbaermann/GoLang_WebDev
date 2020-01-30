@@ -1,5 +1,6 @@
 package config
 
+//connects to DB
 import (
 	"database/sql"
 	"fmt"
